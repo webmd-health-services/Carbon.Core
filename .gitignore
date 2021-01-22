@@ -1,2 +1,4 @@
 /.output
 /PSModules
+/.vscode
+/Tests/.password

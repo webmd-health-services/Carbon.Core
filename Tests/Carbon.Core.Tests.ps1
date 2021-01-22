@@ -3,11 +3,11 @@
 #Requires -Version 5.1
 Set-StrictMode -Version 'Latest'
 
-& (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Carbon.ManagementTest.ps1' -Resolve)
+& (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
 
 function GivenModuleImported
 {
-    # Don't do anything since Initialize-Carbon.Management.ps1 imports the module.
+    # Don't do anything since Initialize-Test.ps1 imports the module.
 }
 
 function Init
@@ -66,15 +66,15 @@ function ThenHelpTopic
     }
 }
 
-Describe ('Carbon.Management.help topic') {
+Describe ('Carbon.Core.help topic') {
     It 'should have one' {
         Init
         GivenModuleImported
-        ThenHelpTopic 'about_Carbon.Management' -Exists
+        ThenHelpTopic 'about_Carbon.Core' -Exists
     }
 }
 
-Describe ('Carbon.Management.command verbs') {
+Describe ('Carbon.Core.command verbs') {
     It 'should only use approved verbs' {
         Init
         GivenModuleImported
@@ -82,11 +82,11 @@ Describe ('Carbon.Management.command verbs') {
     }
 }
 
-Describe ('Carbon.Management.command help topics') {
+Describe ('Carbon.Core.command help topics') {
     It 'should have a help topic for each command' {
         Init
         GivenModuleImported
-        foreach( $cmd in (Get-Command -Module 'Carbon.Management' -CommandType Function,Cmdlet,Filter))
+        foreach( $cmd in (Get-Command -Module 'Carbon.Core' -CommandType Function,Cmdlet,Filter))
         {
             ThenHelpTopic $cmd.Name -Exists -HasSynopsis -HasDescription -HasExamples
         }

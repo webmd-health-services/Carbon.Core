@@ -3,7 +3,7 @@
 Gets things ready for your tests to run.
 
 .DESCRIPTION
-The `Initialize-Carbon.ManagementTest.ps1` script gets your tests ready to run by:
+The `Initialize-Test.ps1` script gets your tests ready to run by:
 
 * Importing the module you're testing.
 * Importing your test helper module.
@@ -14,7 +14,7 @@ Execute this script as the first thing in each of your test fixtures:
     #Requires -Version 5.1
     Set-StrictMode -Version 'Latest'
     
-    & (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Carbon.ManagementTest.ps1' -Resolve)
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
 #>
 [CmdletBinding()]
 param(
@@ -29,8 +29,8 @@ $Global:WhatIfPreference = $WhatIfPreference = $false
 try
 {
     $modules = [ordered]@{
-        'Carbon.Management' = '..\Carbon.Management';
-        'Carbon.ManagementTestHelper' = 'Carbon.ManagementTestHelper';
+        'Carbon.Core' = '..\Carbon.Core';
+        'Carbon.CoreTestHelper' = 'Carbon.CoreTestHelper';
     }
     foreach( $moduleName in $modules.Keys )
     {

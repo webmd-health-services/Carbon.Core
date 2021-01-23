@@ -11,6 +11,7 @@ Build:
 # works.
 - MergeFile:
     OnlyBy: BuildServer
+    IfExists: Carbon.Core\Functions\*.ps1
     Path:
     - Carbon.Core\Functions\*.ps1
     DestinationPath: Carbon.Core\Carbon.Core.psm1
@@ -34,18 +35,26 @@ Build:
     Path: reset.ps1
 - Pester4:
     Script: Tests\*.Tests.ps1
+- Delete:
+    Path: .output\*.zip
 - Zip:
     ArchivePath: .output\Carbon.Core.zip
     Path: 
     - Carbon.Core
 
 Publish:
+- AppVeyorWaitForBuildJobs:
+    IfExists: env:PUBLISH
+    UnlessExists: env:APPVEYOR_PULL_REQUEST_NUMBER
+    ApiKeyID: AppVeyorBearerToken
+
 - PublishPowerShellModule:
+    IfExists: env:PUBLISH
     UnlessExists: env:APPVEYOR_PULL_REQUEST_NUMBER
     RepositoryName: PSGallery
     RepositoryUri: https://powershellgallery.com/api/v2/
     Path: Carbon.Core
-    ApiKeyID: PowerShellGallery
+    ApiKeyID: PowerShellGalleryApiKey
 
 - SetVariableFromPowerShellDataFile:
     Path: Carbon.Core\Carbon.Core.psd1
@@ -55,9 +64,10 @@ Publish:
                 ReleaseNotes: RELEASE_NOTES
 
 - GitHubRelease:
+    IfExists: env:PUBLISH
     UnlessExists: env:APPVEYOR_PULL_REQUEST_NUMBER
     RepositoryName: webmd-health-services/Carbon.Core
-    ApiKeyID: github.com
+    ApiKeyID: GitHubAccessToken
     Tag: $(WHISKEY_SEMVER2_NO_BUILD_METADATA)
     Commitish: $(WHISKEY_SCM_COMMIT_ID)
     Name: $(WHISKEY_SEMVER2_NO_BUILD_METADATA)

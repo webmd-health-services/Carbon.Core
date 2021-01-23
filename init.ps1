@@ -5,13 +5,9 @@ param(
 #Requires -RunAsAdministrator
 Set-StrictMode -Version 'Latest'
 
-Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'PSModules\Carbon' -Resolve)
-
-if( -not (Test-Path -Path 'variable:IsWindows') )Carbon.Core
-{
-    $IsWindows = $true
-    $IsLinux = $false
-    $IsMacOS = $false
+& {
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'PSModules\Carbon' -Resolve) -Verbose:$false
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'Carbon.Core' -Resolve) -Verbose:$false
 }
 
 $passwordPath = Join-Path -Path $PSScriptRoot -ChildPath 'Tests\.password'
@@ -21,6 +17,7 @@ if( -not (Test-Path -Path $passwordPath) )
     $randomBytes = [byte[]]::New(9)
     do 
     {
+        Write-Verbose -Message ('Generating random password for test accounts.')
         $rng.GetBytes($randomBytes);
         $password = [Convert]::ToBase64String($randomBytes)
     }
@@ -28,10 +25,15 @@ if( -not (Test-Path -Path $passwordPath) )
     while( $password -cnotmatch '[A-Z]' -and $password -cnotmatch '[a-z]' -and $password -notmatch '\d' )
     $password | Set-Content -Path $passwordPath
 
+    Write-Verbose -Message ('Generating IV for encrypting test account password on Linux.')
     $randomBytes = [byte[]]::New(6)
     $rng.GetBytes($randomBytes)
     $salt = [Convert]::ToBase64String($randomBytes)
     $salt | Add-Content -Path $passwordPath
+}
+else
+{
+    Get-Content -Path $passwordPath -Raw | Write-Verbose
 }
 
 $password,$salt = Get-Content -Path $passwordPath -TotalCount 2
@@ -45,7 +47,7 @@ $users =
 
 foreach( $user in $users )
 {
-    if( $IsWindows )
+    if( (Test-COperatingSystem -IsWindows) )
     {
         $maxLength = $user.Description.Length
         if( $maxLength -gt 48 )
@@ -56,19 +58,19 @@ foreach( $user in $users )
         $credential = [pscredential]::New($user.Name, (ConvertTo-SecureString $password -AsPlainText -Force))
         Install-CUser -Credential $credential -Description $description -UserCannotChangePassword
     }
-    elseif( $IsMacOS )
+    elseif( (Test-COperatingSystem -IsMacOS) )
     {
         $newUid = 
             sudo dscl . -list /Users UniqueID | 
             ForEach-Object { $username,$uid = $_ -split ' +' ; return [int]$uid } |
             Sort-Object |
             Select-Object -Last 1
-        Write-Verbose "  Found highest user ID ""$($newUid)""." -Verbose
+        Write-Verbose "  Found highest user ID ""$($newUid)""."
         $newUid += 1
 
         $username = $user.Name
 
-        Write-Verbose "  Creating $($username) (uid: $($newUid))" -Verbose
+        Write-Verbose "  Creating $($username) (uid: $($newUid))"
         # Create the user account
         sudo dscl . -create /Users/$username
         sudo dscl . -create /Users/$username UserShell /bin/bash
@@ -79,7 +81,7 @@ foreach( $user in $users )
         sudo dscl . -passwd /Users/$username $password
         sudo createhomedir -c
     }
-    elseif( $IsLinux )
+    elseif( (Test-COperatingSystem -IsLinux) )
     {
         $userExists = Get-Content '/etc/passwd' | Where-Object { $_ -match "^$([regex]::Escape($user.Name))\b"}
         if( $userExists )

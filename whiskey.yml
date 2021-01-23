@@ -1,0 +1,52 @@
+
+PublishOn:
+- main
+- prerelease
+
+Build:
+- Version:
+    Path: Carbon.Management\Carbon.Management.psd1
+# Dot-sourcing files is expensive. Move all functions into your .psm1 file to
+# improve import speed. Do this before testing to ensure your module still 
+# works.
+- MergeFile:
+    OnlyBy: BuildServer
+    Path:
+    - Carbon.Management\Functions\*.ps1
+    DestinationPath: Carbon.Management\Carbon.Management.psm1
+    DeleteSourceFiles: true
+    TextSeparator: "$(NewLine)$(NewLine)"
+- Pester4:
+    Path: Tests\*.Tests.ps1
+- Zip:
+    ArchivePath: .output\Carbon.Management.zip
+    Path: 
+    - Carbon.Management
+
+Publish:
+- PublishPowerShellModule:
+    UnlessExists: env:APPVEYOR_PULL_REQUEST_NUMBER
+    RepositoryName: PSGallery
+    RepositoryUri: https://powershellgallery.com/api/v2/
+    Path: Carbon.Management
+    ApiKeyID: PowerShellGallery
+
+- SetVariableFromPowerShellDataFile:
+    Path: Carbon.Management\Carbon.Management.psd1
+    Variables:
+        PrivateData:
+            PSData:
+                ReleaseNotes: RELEASE_NOTES
+
+- GitHubRelease:
+    UnlessExists: env:APPVEYOR_PULL_REQUEST_NUMBER
+    RepositoryName: webmd-health-services/Carbon.Management
+    ApiKeyID: github.com
+    Tag: $(WHISKEY_SEMVER2_NO_BUILD_METADATA)
+    Commitish: $(WHISKEY_SCM_COMMIT_ID)
+    Name: $(WHISKEY_SEMVER2_NO_BUILD_METADATA)
+    Description: $(RELEASE_NOTES)
+    Assets:
+    - Path: .output\Carbon.Management.zip
+      ContentType: application/zip
+      Name: Carbon.Management-$(WHISKEY_SEMVER2_NO_BUILD_METADATA).zip

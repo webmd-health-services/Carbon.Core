@@ -1,0 +1,9 @@
+TOPIC
+    about_Carbon.Management
+
+SHORT DESCRIPTION
+    Carbon.Management is a PowerShell module for...
+
+LONG DESCRIPTION
+    The Carbon.Management PowerShell module...
+

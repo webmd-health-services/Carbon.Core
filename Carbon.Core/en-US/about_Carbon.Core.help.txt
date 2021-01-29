@@ -1,0 +1,45 @@
+TOPIC
+    about_Carbon.Core
+
+SHORT DESCRIPTION
+    Carbon.Core is a PowerShell module that contains functions that makes writing PowerShell automation easier.
+
+LONG DESCRIPTION
+
+    # Overview
+
+    The Carbon.Core PowerShell module contains functions that help makes writing PowerShell automation easier. It
+    contains the following functions:
+
+    * ConvertTo-CBase64: Convert strings, characters, bytes, numbers, and booleans into base64 strings.
+    * Get-CPowerShellPath: Get the path to the PowerShell executable.
+    * Invoke-CPowerShell: Run a PowerShell executable, as the current user or another. On 64-bit Windows, you can also
+      run 32-bit or 64-bit PowerShell processes.
+    * Test-COperatingSystem: Test if the current operating system is 32-bit, 64-bit, Windows, Linux, or macOS.
+    * Test-CPowerShell: Test if the current PowerShell instance is 32-bit, 64-bit, Core edition, or Desktop edition.
+
+    # System Requirements
+
+    * Windows PowerShell 5.1+ and .NET 4.6.1+
+    * PowerShell Core 6+
+
+    # Installing
+
+    `Carbon.Core` is only available on the PowerShell Gallery. To install globally:
+
+        Install-Module -Name 'Carbon.Core'
+        Import-Module -Name 'Carbon.Core'
+
+    To install privately,
+
+        Save-Module -Name 'Carbon.Core' -Path '.'
+        Import-Module -Name '.\Carbon.Core'
+
+    ZIP packages are also available on the
+    [project's site on GitHub](https://github.com/webmd-health-services/Carbon.Core).
+
+    # Links
+
+    * [Project](https://github.com/webmd-health-services/Carbon.Core)
+    * [Carbon.Core on the PowerShell Gallery](https://www.powershellgallery.com/packages/Carbon.Core)
+    

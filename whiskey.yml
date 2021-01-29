@@ -5,48 +5,74 @@ PublishOn:
 
 Build:
 - Version:
-    Path: Carbon.Management\Carbon.Management.psd1
+    Path: Carbon.Core\Carbon.Core.psd1
 # Dot-sourcing files is expensive. Move all functions into your .psm1 file to
 # improve import speed. Do this before testing to ensure your module still 
 # works.
 - MergeFile:
     OnlyBy: BuildServer
+    IfExists: Carbon.Core\Functions\*.ps1
     Path:
-    - Carbon.Management\Functions\*.ps1
-    DestinationPath: Carbon.Management\Carbon.Management.psm1
+    - Carbon.Core\Functions\*.ps1
+    DestinationPath: Carbon.Core\Carbon.Core.psm1
     DeleteSourceFiles: true
     TextSeparator: "$(NewLine)$(NewLine)"
+- CopyFile:
+    OnlyBy: BuildServer
+    Path:
+    - LICENSE
+    - NOTICE
+    DestinationDirectory: Carbon.Core
+# Needed to install test users.
+- GetPowerShellModule:
+    Name: Carbon
+    Version: 2.*
+- PowerShell:
+    ExceptDuring: Clean
+    Path: init.ps1
+- PowerShell:
+    OnlyDuring: Clean
+    Path: reset.ps1
 - Pester4:
-    Path: Tests\*.Tests.ps1
+    Script: Tests\*.Tests.ps1
+- Delete:
+    Path: .output\*.zip
 - Zip:
-    ArchivePath: .output\Carbon.Management.zip
+    ArchivePath: .output\Carbon.Core.zip
     Path: 
-    - Carbon.Management
+    - Carbon.Core
 
 Publish:
+- AppVeyorWaitForBuildJobs:
+    IfExists: env:PUBLISH
+    UnlessExists: env:APPVEYOR_PULL_REQUEST_NUMBER
+    ApiKeyID: AppVeyorBearerToken
+
 - PublishPowerShellModule:
+    IfExists: env:PUBLISH
     UnlessExists: env:APPVEYOR_PULL_REQUEST_NUMBER
     RepositoryName: PSGallery
     RepositoryUri: https://powershellgallery.com/api/v2/
-    Path: Carbon.Management
-    ApiKeyID: PowerShellGallery
+    Path: Carbon.Core
+    ApiKeyID: PowerShellGalleryApiKey
 
 - SetVariableFromPowerShellDataFile:
-    Path: Carbon.Management\Carbon.Management.psd1
+    Path: Carbon.Core\Carbon.Core.psd1
     Variables:
         PrivateData:
             PSData:
                 ReleaseNotes: RELEASE_NOTES
 
 - GitHubRelease:
+    IfExists: env:PUBLISH
     UnlessExists: env:APPVEYOR_PULL_REQUEST_NUMBER
-    RepositoryName: webmd-health-services/Carbon.Management
-    ApiKeyID: github.com
+    RepositoryName: webmd-health-services/Carbon.Core
+    ApiKeyID: GitHubAccessToken
     Tag: $(WHISKEY_SEMVER2_NO_BUILD_METADATA)
     Commitish: $(WHISKEY_SCM_COMMIT_ID)
     Name: $(WHISKEY_SEMVER2_NO_BUILD_METADATA)
     Description: $(RELEASE_NOTES)
     Assets:
-    - Path: .output\Carbon.Management.zip
+    - Path: .output\Carbon.Core.zip
       ContentType: application/zip
-      Name: Carbon.Management-$(WHISKEY_SEMVER2_NO_BUILD_METADATA).zip
+      Name: Carbon.Core-$(WHISKEY_SEMVER2_NO_BUILD_METADATA).zip

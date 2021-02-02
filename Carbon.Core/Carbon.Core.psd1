@@ -18,22 +18,22 @@
     RootModule = 'Carbon.Core.psm1'
 
     # Version number of this module.
-    ModuleVersion = '1.0.0'
+    ModuleVersion = '1.0.1'
 
     # ID used to uniquely identify this module
     GUID = '20DA9F42-23C4-4917-8597-DCFD7EE4AD00'
 
     # Author of this module
-    Author = 'WebMD Health Services'
+    Author = 'Aaron Jensen and WebMD Health Services'
 
     # Company or vendor of this module
-    CompanyName = 'WebMD Health Services'
+    CompanyName = 'Aaron Jensen and WebMD Health Services'
 
     # If you want to support .NET Core, add 'Core' to this list.
     CompatiblePSEditions = @( 'Desktop', 'Core' )
 
     # Copyright statement for this module
-    Copyright = '(c) 2021 Aaron Jensen and WebMD Health Services.'
+    Copyright = '(c) Aaron Jensen and WebMD Health Services.'
 
     # Description of the functionality provided by this module
     Description = 'Functions that make doing things in PowerShell a little easier. We think these should be part of PowerShell itself. Core functions that are used by other Carbon modules.'
@@ -109,9 +109,10 @@
 
             # Tags applied to this module. These help with module discovery in online galleries.
             Tags = @(
-                'Carbon', 'Desktop', 'Core', 'encoding', 'convert', 'convertto', 'text', 'base64', 'invoke', 'os',
-                'operating-system', 'architecture', 'powershell', 'pwsh', 'runas', 'credential', 'x86', 'x64',
-                'windows', 'linux', 'macos' )
+                'Desktop', 'Core', 'Carbon', 'encoding', 'convert', 'convertto', 'text', 'base64', 'invoke', 'os',
+                'operating-system', 'architecture', 'powershell', 'pwsh', 'runas', 'credential', 'x86', 'x64', '32-bit',
+                '32bit', '64-bit', '64bit', 'windows', 'linux', 'macos'
+            )
 
             # A URL to the license for this module.
             LicenseUri = 'http://www.apache.org/licenses/LICENSE-2.0'

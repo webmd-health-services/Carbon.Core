@@ -29,9 +29,13 @@ Build:
     - CHANGELOG.md
     DestinationDirectory: Carbon.Core
 # Needed to install test users.
-- GetPowerShellModule:
-    Name: Carbon
-    Version: 2.*
+- PowerShell:
+    ScriptBlock: |
+        if( -not (Get-Module -Name 'Prism' -ListAvailable) )
+        {
+            Find-Module -Name 'Prism' | Select-Object -First 1 | Install-Module -Force
+        }
+        prism install | Format-Table -Auto
 - PowerShell:
     ExceptDuring: Clean
     Path: init.ps1

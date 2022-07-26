@@ -1,4 +1,12 @@
 
+# 1.1.0
+
+Added `Test-CTypeDataMember` and `Add-CTypeData` functions for testing if a type has any defined custom type data and
+adding custom type data, respectively. Defining type data with .ps1xml files can result in errors importing the same
+module multiple times: PowerShell complains that the type data is already defined. Using `Add-CTypeData` prevents these
+this error as it only adds members that don't already exist.
+
+
 # 1.0.0
 
 ## Upgrade Instructions
@@ -23,7 +31,7 @@ a string, and pass that string to the `Command` parameter. This will base64 enco
 PowerShell's -EncodedCommand property.
 * The `Invoke-CPowerShell` function no longer has `FilePath`, `OutputFormat`, `ExecutionPolicy`, `NonInteractive`, 
 or `Runtime` parameters. Instead, pass these as arguments to the `ArgumentList` parameter, e.g. 
-`-ArgumentList @('-NonInteractive', '-ExecutionPolicy', 'Bypasss'). You are now responsible for passing all PowerShell
+`-ArgumentList @('-NonInteractive', '-ExecutionPolicy', 'Bypasss')`. You are now responsible for passing all PowerShell
 arguments via the `ArgumentList` parameter.
 * The `Invoke-CPowerShell` function no longer supports running PowerShell 2 under .NET 4.
 * Remove the `-Encode` switch. `Invoke-CPowerShell` now always base64 encodes the value of the `Command` parameter.

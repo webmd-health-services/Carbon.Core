@@ -18,7 +18,7 @@
     RootModule = 'Carbon.Core.psm1'
 
     # Version number of this module.
-    ModuleVersion = '1.0.0'
+    ModuleVersion = '1.1.0'
 
     # ID used to uniquely identify this module
     GUID = '20DA9F42-23C4-4917-8597-DCFD7EE4AD00'
@@ -76,12 +76,14 @@
 
     # Functions to export from this module. Only list public function here.
     FunctionsToExport = @(
+        'Add-CTypeData',
         'ConvertTo-CBase64',
         'Get-CPowerShellPath',
         'Invoke-CPowerShell',
         'Start-CPowerShellProcess',
         'Test-COperatingSystem',
-        'Test-CPowerShell'
+        'Test-CPowerShell',
+        'Test-CTypeDataMember'
     )
 
     # Cmdlets to export from this module. By default, you get a script module, so there are no cmdlets.

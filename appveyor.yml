@@ -1,39 +1,59 @@
-version: 0.0.{build}
+version: 0.0.0+{build}
 
 skip_tags: true
 
 skip_branch_with_pr: true
 
-image: 
-- Visual Studio 2015
-- Visual Studio 2017
-- Visual Studio 2019
-- Ubuntu
-- macOS
-
 build:
   verbosity: minimal
 
-build_script:
-- pwsh: .\build.ps1 -Verbose
+environment:
+  WHISKEY_DISABLE_ERROR_FORMAT: True
+  matrix:
+  - job_name: .NET 4.6.2
+    job_group: ps
+    appveyor_build_worker_image: Visual Studio 2013
+
+  - job_name: Windows PowerShell 5.1 on Windows Server 2012R2
+    job_group: ps
+    appveyor_build_worker_image: Visual Studio 2015
+
+  - job_name: PowerShell 6 on Windows Server 2012R2
+    job_group: pwsh
+    appveyor_build_worker_image: Visual Studio 2015
+
+  - job_name: Windows PowerShell 5.1 on Windows Server 2016
+    job_group: ps
+    appveyor_build_worker_image: Visual Studio 2017
+
+  - job_name: PowerShell 6 on Windows Server 2016
+    job_group: pwsh
+    appveyor_build_worker_image: Visual Studio 2017
+
+  - job_name: Windows PowerShell 5.1 on Windows Server 2019
+    job_group: ps
+    appveyor_build_worker_image: Visual Studio 2019
+
+  - job_name: PowerShell 7 on Windows Server 2019
+    job_group: pwsh
+    appveyor_build_worker_image: Visual Studio 2019
+
+
+artifacts:
+- path: .output\*
+
 
 for:
+# Build in Windows PowerShell
 - matrix:
     only:
-      - image: Visual Studio 2015
-      - image: Visual Studio 2017
+    - job_group: ps
   build_script:
-  - ps: .\build.ps1 -Verbose
-  - pwsh: .\build.ps1 -Verbose
+  - ps: .\build.ps1
 
+# Build in PowerShell
 - matrix:
     only:
-      - image: Ubuntu
-  environment:
-    LANG: us_US.UTF-8
-
-- matrix:
-    only:
-    - image: Visual Studio 2019
-  environment:
-    PUBLISH: True
+    - job_group: pwsh
+  build_script:
+  - pwsh: ./build.ps1

@@ -18,7 +18,7 @@
     RootModule = 'Carbon.Core.psm1'
 
     # Version number of this module.
-    ModuleVersion = '1.0.0'
+    ModuleVersion = '1.1.0'
 
     # ID used to uniquely identify this module
     GUID = '20DA9F42-23C4-4917-8597-DCFD7EE4AD00'
@@ -76,12 +76,14 @@
 
     # Functions to export from this module. Only list public function here.
     FunctionsToExport = @(
+        'Add-CTypeData',
         'ConvertTo-CBase64',
         'Get-CPowerShellPath',
         'Invoke-CPowerShell',
         'Start-CPowerShellProcess',
         'Test-COperatingSystem',
-        'Test-CPowerShell'
+        'Test-CPowerShell',
+        'Test-CTypeDataMember'
     )
 
     # Cmdlets to export from this module. By default, you get a script module, so there are no cmdlets.
@@ -110,8 +112,8 @@
             # Tags applied to this module. These help with module discovery in online galleries.
             Tags = @(
                 'Carbon', 'Desktop', 'Core', 'encoding', 'convert', 'convertto', 'text', 'base64', 'invoke', 'os',
-                'operating-system', 'architecture', 'powershell', 'pwsh', 'runas', 'credential', 'x86', 'x64',
-                'windows', 'linux', 'macos' )
+                'operating', 'system', 'architecture', 'powershell', 'pwsh', 'runas', 'credential', 'x86', 'x64',
+                'windows', 'linux', 'macos', 'type', 'data', 'update-typedata', 'member', 'add-member' )
 
             # A URL to the license for this module.
             LicenseUri = 'http://www.apache.org/licenses/LICENSE-2.0'
@@ -125,60 +127,7 @@
             Prerelease = ''
 
             # ReleaseNotes of this module
-            ReleaseNotes = @'
-# Upgrade Instructions
-
-We're breaking up Carbon into smaller and more targeted modules. Hopefully, this will help maintenance, and make it
-easier to use Carbon across many versions and editions of PowerShell. This module will be the place where core functions
-used by other Carbon modules will be put.
-
-If you're upgrading from Carbon to this module, you should do the following:
-
-* Replace usages of `Test-COSIs64Bit` with `Test-COperatingSystem -Is64Bit`.
-* Replace usages of `Test-COSIs32Bit` with `Test-COperatingSystem -Is32Bit`.
-* Replace usages of `Test-CPowerShellIs32Bit` with `Test-CPowerShell -Is32Bit`.
-* Replace usages of `Test-CPowerShellIs64Bit` with `Test-CPowerShell -Is64Bit`.
-* Rename usages of the `ConvertTo-CBase64` function's `Value` parameter to `InputObject`, or pipe the value to the 
-function instead.
-
-We made a lot of changes to the `Invoke-CPowerShell` function:
-
-* The `Invoke-CPowerShell` function no longer allows you to pass script blocks. Instead, convert your script block to
-a string, and pass that string to the `Command` parameter. This will base64 encode the command and pass it to 
-PowerShell's -EncodedCommand property.
-* The `Invoke-CPowerShell` function no longer has `FilePath`, `OutputFormat`, `ExecutionPolicy`, `NonInteractive`, 
-or `Runtime` parameters. Instead, pass these as arguments to the `ArgumentList` parameter, e.g. 
-`-ArgumentList @('-NonInteractive', '-ExecutionPolicy', 'Bypasss'). You are now responsible for passing all PowerShell
-arguments via the `ArgumentList` parameter.
-* The `Invoke-CPowerShell` function no longer supports running PowerShell 2 under .NET 4.
-* Remove the `-Encode` switch. `Invoke-CPowerShell` now always base64 encodes the value of the `Command` parameter.
-* The `Invoke-CPowerShell` function only accepts strings to the `-Command` parameter. Check all usages to ensure you're
-passing a string.
-* The `Invoke-CPowerShell` function now returns output when running PowerShell as a different user. You may see more
-output in your scripts.
-
-
-# Changes Since Carbon 2.9.4
-
-* Migrated `Invoke-CPowerShell` and `ConvertTo-CBase64` from Carbon.
-* `ConvertTo-CBase64` now converts chars, ints (signed and unsigned, 16, 32, and 64-bit sizes), floats, and doubles to 
-base64. You can now also pipe an array of bytes or chars and it will collect each item in the array and encode them at
-as one unit.
-* Renamed the `ConvertTo-CBase64` function's `Value` parameter to `InputObject`.
-* Created `Test-COperatingSystem` function that can test if the current OS is 32-bit, 62-bit, Windows, Linux, and/or 
-macOS. This function was adapted from and replaces's Carbon's `Test-COSIs64Bit` and `Test-COSIs32Bit`.
-* Created `Test-CPowerShell` function that can test if the current PowerShell instance is 32-bit, 64-bit, Core edition,
-or Desktop edition. It treats  versions of PowerShell that don't specify a version as "Desktop". This function was 
-adapted from and replaces Carbon's `Test-CPowerShellIs32Bit` and `Test-CPowerShellIs64Bit` functions.
-* `Invoke-CPowerShell` now works on Linux and macOS. On Windows, it will start a new PowerShell process using the same
-edition. If you want to use a custom version of PowerShell, pass the path to the PowerShell executable to use to the
-new `Path` parameter.
-
-# Known Issues
-* There is a bug in PowerShell Core on Linux/macOS that fails when running `Start-Job` with a custom credential. The
-`Invoke-CPowerShell` function will fail when run on Linux/MacOS using a custom credential. See 
-https://github.com/PowerShell/PowerShell/issues/7172 for more information.
-'@
+            ReleaseNotes = 'https://github.com/webmd-health-services/Carbon.Core/blob/main/CHANGELOG.md'
         } # End of PSData hashtable
 
     } # End of PrivateData hashtable

@@ -1,11 +1,14 @@
 
-PublishOn:
-- main
-- prerelease
-
 Build:
 - Version:
     Path: Carbon.Core\Carbon.Core.psd1
+    Prerelease:
+    - "*/*": alpha$(WHISKEY_BUILD_NUMBER)
+    - develop: rc$(WHISKEY_BUILD_NUMBER)
+- Exec:
+    OnlyBy: BuildServer
+    Path: appveyor
+    Argument: [ UpdateBuild, -Version, "$(WHISKEY_SEMVER2)+$(WHISKEY_BUILD_NUMBER)" ]
 # Dot-sourcing files is expensive. Move all functions into your .psm1 file to
 # improve import speed. Do this before testing to ensure your module still 
 # works.
@@ -22,57 +25,46 @@ Build:
     Path:
     - LICENSE
     - NOTICE
+    - README.md
+    - CHANGELOG.md
     DestinationDirectory: Carbon.Core
 # Needed to install test users.
-- GetPowerShellModule:
-    Name: Carbon
-    Version: 2.*
+- PowerShell:
+    ScriptBlock: |
+        if( -not (Get-Module -Name 'Prism' -ListAvailable) )
+        {
+            Find-Module -Name 'Prism' | Select-Object -First 1 | Install-Module -Force
+        }
+        prism install | Format-Table -Auto
 - PowerShell:
     ExceptDuring: Clean
     Path: init.ps1
 - PowerShell:
     OnlyDuring: Clean
     Path: reset.ps1
-- Pester4:
-    Script: Tests\*.Tests.ps1
+
+- PublishPowerShellModule:
+    Path: Carbon.Core
+- Exec:
+    OnlyBy: BuildServer
+    Path: appveyor
+    Argument: [
+        'PushArtifact',
+        '.output/Carbon.Core.$(WHISKEY_SEMVER2_NO_BUILD_METADATA).nupkg',
+        '-DeploymentName',
+        'PowerShellGallery'
+    ]
+
 - Delete:
     Path: .output\*.zip
 - Zip:
-    ArchivePath: .output\Carbon.Core.zip
+    ArchivePath: .output\Carbon.Core-$(WHISKEY_SEMVER2).zip
     Path: 
     - Carbon.Core
+- Exec:
+    OnlyBy: BuildServer
+    Path: appveyor
+    Argument: [ 'PushArtifact', '.output/Carbon.Core-$(WHISKEY_SEMVER2).zip', '-DeploymentName', 'GitHub' ]
 
-Publish:
-- AppVeyorWaitForBuildJobs:
-    IfExists: env:PUBLISH
-    UnlessExists: env:APPVEYOR_PULL_REQUEST_NUMBER
-    ApiKeyID: AppVeyorBearerToken
-
-- PublishPowerShellModule:
-    IfExists: env:PUBLISH
-    UnlessExists: env:APPVEYOR_PULL_REQUEST_NUMBER
-    RepositoryName: PSGallery
-    RepositoryUri: https://powershellgallery.com/api/v2/
-    Path: Carbon.Core
-    ApiKeyID: PowerShellGalleryApiKey
-
-- SetVariableFromPowerShellDataFile:
-    Path: Carbon.Core\Carbon.Core.psd1
-    Variables:
-        PrivateData:
-            PSData:
-                ReleaseNotes: RELEASE_NOTES
-
-- GitHubRelease:
-    IfExists: env:PUBLISH
-    UnlessExists: env:APPVEYOR_PULL_REQUEST_NUMBER
-    RepositoryName: webmd-health-services/Carbon.Core
-    ApiKeyID: GitHubAccessToken
-    Tag: $(WHISKEY_SEMVER2_NO_BUILD_METADATA)
-    Commitish: $(WHISKEY_SCM_COMMIT_ID)
-    Name: $(WHISKEY_SEMVER2_NO_BUILD_METADATA)
-    Description: $(RELEASE_NOTES)
-    Assets:
-    - Path: .output\Carbon.Core.zip
-      ContentType: application/zip
-      Name: Carbon.Core-$(WHISKEY_SEMVER2_NO_BUILD_METADATA).zip
+- Pester4:
+    Script: Tests\*.Tests.ps1

@@ -22,7 +22,8 @@ if( -not (Test-Path -Path $passwordPath) )
         $password = [Convert]::ToBase64String($randomBytes)
     }
     # Password needs to contain uppercase letter, lowercase letter, and a number.
-    while( $password -cnotmatch '[A-Z]' -and $password -cnotmatch '[a-z]' -and $password -notmatch '\d' )
+    while( $password -cnotmatch '[A-Z]' -and $password -cnotmatch '[a-z]' -and $password -notmatch '\d' -and `
+           $password -notmatch ([regex]::Escape('`~!@#$%^&*()_+-=[]\{}|;'':",./<>?')) )
     $password | Set-Content -Path $passwordPath
 
     Write-Verbose -Message ('Generating IV for encrypting test account password on Linux.')

@@ -26,6 +26,7 @@ Build:
     - LICENSE
     - NOTICE
     - README.md
+    - CHANGELOG.md
     DestinationDirectory: Carbon.Core
 # Needed to install test users.
 - GetPowerShellModule:

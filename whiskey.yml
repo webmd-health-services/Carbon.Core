@@ -10,7 +10,7 @@ Build:
     Path: appveyor
     Argument: [ UpdateBuild, -Version, "$(WHISKEY_SEMVER2)+$(WHISKEY_BUILD_NUMBER)" ]
 # Dot-sourcing files is expensive. Move all functions into your .psm1 file to
-# improve import speed. Do this before testing to ensure your module still 
+# improve import speed. Do this before testing to ensure your module still
 # works.
 - MergeFile:
     OnlyBy: BuildServer
@@ -30,12 +30,7 @@ Build:
     DestinationDirectory: Carbon.Core
 # Needed to install test users.
 - PowerShell:
-    ScriptBlock: |
-        if( -not (Get-Module -Name 'Prism' -ListAvailable) )
-        {
-            Find-Module -Name 'Prism' | Select-Object -First 1 | Install-Module -Force
-        }
-        prism install | Format-Table -Auto
+    ScriptBlock: prism install | Format-Table -Auto
 - PowerShell:
     ExceptDuring: Clean
     Path: init.ps1
@@ -59,7 +54,7 @@ Build:
     Path: .output\*.zip
 - Zip:
     ArchivePath: .output\Carbon.Core-$(WHISKEY_SEMVER2).zip
-    Path: 
+    Path:
     - Carbon.Core
 - Exec:
     OnlyBy: BuildServer

@@ -19,6 +19,10 @@ If migrating from Carbon, do the following:
 * Function `Resolve-FullPath` (if migrating from `Carbon`). Use the `Resolve-CFullPath` function instead.
 * Function `ConvertTo-FullPath` (if migrating from `Carbon`). Use the `Resolve-CFullPath` function instead.
 
+## Deprecated
+
+* The `Import-Carbon.Core.ps1` script. Use `Import-Module` instead.
+
 # 1.1.0
 
 Added `Test-CTypeDataMember` and `Add-CTypeData` functions for testing if a type has any defined custom type data and

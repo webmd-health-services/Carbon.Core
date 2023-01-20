@@ -14,15 +14,13 @@
 
 <#
 .SYNOPSIS
-Imports the Carbon.Core module into the current session.
+OBSOLETE. Use `Import-Module` instead.
 
 .DESCRIPTION
-The `Import-Carbon.Core function imports the Carbon.Core module into the current session. If the module is already loaded, it is removed, then reloaded.
+OBSOLETE. Use `Import-Module` instead.
 
 .EXAMPLE
-.\Import-Carbon.Core.ps1
-
-Demonstrates how to use this script to import the Carbon.Core module  into the current PowerShell session.
+OBSOLETE. Use `Import-Module` instead.
 #>
 [CmdletBinding()]
 param(
@@ -30,6 +28,9 @@ param(
 
 #Requires -Version 5.1
 Set-StrictMode -Version 'Latest'
+
+'This script is OBSOLETE and will be removed in the next major version of Carbon.Core. Use Import-Module instead.' |
+    Write-Warning
 
 $originalVerbosePref = $Global:VerbosePreference
 $originalWhatIfPref = $Global:WhatIfPreference

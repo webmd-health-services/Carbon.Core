@@ -13,7 +13,7 @@ Execute this script as the first thing in each of your test fixtures:
 
     #Requires -Version 5.1
     Set-StrictMode -Version 'Latest'
-    
+
     & (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
 #>
 [CmdletBinding()]
@@ -51,6 +51,9 @@ try
         Write-Verbose -Message ('Importing module "{0}" from "{1}".' -f $moduleName,$modulePath)
         Import-Module -Name $modulePath
     }
+
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '..\PSModules\Carbon' -Resolve) `
+                  -Function @('Get-CPermission', 'Grant-CPermission', 'Install-CRegistryKey')
 }
 finally
 {

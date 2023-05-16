@@ -12,16 +12,38 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 
+using namespace Carbon.Security
+using namespace System.Security.AccessControl
+
 #Requires -Version 5.1
 Set-StrictMode -Version 'Latest'
 
 # Functions should use $moduleRoot as the relative root from which to find
-# things. A published module has its function appended to this file, while a 
+# things. A published module has its function appended to this file, while a
 # module in development has its functions in the Functions directory.
 $moduleRoot = $PSScriptRoot
 
-# Store each of your module's functions in its own file in the Functions 
-# directory. On the build server, your module's functions will be appended to 
+[Flags()]
+enum CContainerInheritanceFlags
+{
+                                                # Container
+    Container =                                 0x01        # SubContainers
+    SubContainers =                                         0x02        # Leaves
+    Leaves =                                                            0x04        # ChildContainers
+    ChildContainers =                                                               0x08        # ChildLeaves
+    ChildLeaves =                                                                               0x10
+    ContainerAndSubContainers =                 0x1 -bor    0x2
+    ContainerAndLeaves =                        0x1 -bor                0x4
+    SubContainersAndLeaves =                                0x2 -bor    0x4
+    ContainerAndChildContainers =               0x01 -bor                           0x08
+    ContainerAndChildLeaves =                   0x01 -bor                                       0x10
+    ContainerAndChildContainersAndChildLeaves = 0x01 -bor                           0x08 -bor   0x10
+    ContainerAndSubContainersAndLeaves =        0x01 -bor   0x02 -bor   0x04
+    ChildContainersAndChildLeaves =                                                 0x08 -bor   0x10
+}
+
+# Store each of your module's functions in its own file in the Functions
+# directory. On the build server, your module's functions will be appended to
 # this file, so only dot-source files that exist on the file system. This allows
 # developers to work on a module without having to build it first. Grab all the
 # functions that are in their own files.

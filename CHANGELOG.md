@@ -1,38 +1,66 @@
 <!-- markdownlint-disable MD024 no-duplicate-heading/no-duplicate-header -->
+<!-- markdownlint-disable MD012 no-multiple-blanks -->
 
-# 1.2.0
+# Carbon.Core PowerShell Module Changelog
 
-## Upgrade Instructions
+## 1.3.0
+
+### Upgrade Instructions
+
+If switching from Carbon, rename usages of `[Carbon.Security.ContainerInheritanceFlags]` to
+`[CContainerInheritanceFlags]`.
+
+### Added
+
+* Enumeration `CContainerInheritanceFlags` (migrated from Carbon's `Carbon.Security.ContainerInheritanceFlags enum),
+used by permissions functions in other Carbon modules to represent the NTFS inheritance and propagation flags.
+* Function `ConvertTo-CContainerInheritanceFlag` (migrated from Carbon), used by permissiosn functions in other Carbon
+modules to convert `System.Security.AccessControl.InheritanceFlags` and `System.Security.AccessControl.PropagationFlags`
+values value into a `CContainerInheritanceFlags` value.
+* Function `ConvertTo-CInheritanceFlag` (migrated from Carbon), used by permissiosn functions in other Carbon modules to
+convert a `CContainerInheritanceFlags` value into a `System.Security.AccessControl.InheritanceFlags`
+value.
+* Function `ConvertTo-CPropagationFlag` (migrated from Carbon), used by permission functions in other Carbon modules to
+convert a `CContainerPropagationFlags` value into a `System.Security.AccessControl.PropagationFlags`
+value.
+* Function `Get-CPathProvider` (migrated from Carbon), used to get a provider from a path.
+
+
+## 1.2.0
+
+### Upgrade Instructions
 
 If migrating from Carbon, do the following:
 
 * Rename usages of `Resolve-FullPath` to `Resolve-CFullPath`. The `C` prefix is now required.
 * Replace usages of `ConvertTo-FullPath` to `Resolve-CFullPath`. We removed the `ConvertTo-FullPath` alias.
 
-## Additions
+### Added
 
 * Function `Resolve-CFullPath` (migrated from the `Carbon` module), that converts paths with relative segments (i.e.
 `.` and `..`) to a full, absolute path. The path does not need to exist.
 
-## Deletions
+### Removed
 
 * Function `Resolve-FullPath` (if migrating from `Carbon`). Use the `Resolve-CFullPath` function instead.
 * Function `ConvertTo-FullPath` (if migrating from `Carbon`). Use the `Resolve-CFullPath` function instead.
 
-## Deprecated
+### Deprecated
 
 * The `Import-Carbon.Core.ps1` script. Use `Import-Module` instead.
 
-# 1.1.0
+
+## 1.1.0
 
 Added `Test-CTypeDataMember` and `Add-CTypeData` functions for testing if a type has any defined custom type data and
 adding custom type data, respectively. Defining type data with .ps1xml files can result in errors importing the same
 module multiple times: PowerShell complains that the type data is already defined. Using `Add-CTypeData` prevents these
 this error as it only adds members that don't already exist.
 
-# 1.0.0
 
-## Upgrade Instructions
+## 1.0.0
+
+### Upgrade Instructions
 
 We're breaking up Carbon into smaller and more targeted modules. Hopefully, this will help maintenance, and make it
 easier to use Carbon across many versions and editions of PowerShell. This module will be the place where core functions
@@ -63,7 +91,7 @@ passing a string.
 * The `Invoke-CPowerShell` function now returns output when running PowerShell as a different user. You may see more
 output in your scripts.
 
-## Changes Since Carbon 2.9.4
+### Changes Since Carbon 2.9.4
 
 * Migrated `Invoke-CPowerShell` and `ConvertTo-CBase64` from Carbon.
 * `ConvertTo-CBase64` now converts chars, ints (signed and unsigned, 16, 32, and 64-bit sizes), floats, and doubles to
@@ -79,7 +107,7 @@ adapted from and replaces Carbon's `Test-CPowerShellIs32Bit` and `Test-CPowerShe
 edition. If you want to use a custom version of PowerShell, pass the path to the PowerShell executable to use to the
 new `Path` parameter.
 
-## Known Issues
+### Known Issues
 
 * There is a bug in PowerShell Core on Linux/macOS that fails when running `Start-Job` with a custom credential. The
 `Invoke-CPowerShell` function will fail when run on Linux/MacOS using a custom credential. See issue

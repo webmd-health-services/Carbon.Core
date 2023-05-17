@@ -6,12 +6,12 @@ function Test-CPowerShell
     Tests attributes of the current PowerShell process.
 
     .DESCRIPTION
-    The `Test-CPowerShell` function tests attributes of the current PowerShell process (or process hosting the 
+    The `Test-CPowerShell` function tests attributes of the current PowerShell process (or process hosting the
     current PowerShell runspace). It uses the following switches to test the following conditions:
 
     * `Is32Bit`: if the process architecture is 32-bit/x86 (uses `[Environment]::Is64BitProcess`).
     * `Is64Bit`: if the process architecture is 64-bit/x64 (uses `[Environment]::Is64BitProcess`).
-    * `IsDesktop`: if the process is running on Windows PowerShell (uses `$PSVersionTable.Edition`; if this property 
+    * `IsDesktop`: if the process is running on Windows PowerShell (uses `$PSVersionTable.Edition`; if this property
        doesn't exist, always returns `$true`).
     * `IsCore`: if the process is running PowerShell Core (uses `$PSVersionTable.Edition`).
 
@@ -42,18 +42,18 @@ function Test-CPowerShell
     [OutputType([bool])]
     param(
         [Parameter(Mandatory,ParameterSetName='Is32Bit')]
-        [switch]$Is32Bit,
+        [switch] $Is32Bit,
 
         [Parameter(Mandatory,ParameterSetName='Is64Bit')]
-        [switch]$Is64Bit,
+        [switch] $Is64Bit,
 
         [Parameter(Mandatory,ParameterSetName='IsDesktop')]
-        [switch]$IsDesktop,
+        [switch] $IsDesktop,
 
         [Parameter(Mandatory,ParameterSetName='IsCore')]
-        [switch]$IsCore
+        [switch] $IsCore
     )
-    
+
     Set-StrictMode -Version 'Latest'
     Use-CallerPreference -Cmdlet $PSCmdlet -Session $ExecutionContext.SessionState
 

@@ -9,22 +9,12 @@ function Get-CPowerShellPath
     The `Get-CPowerShellPath` function returns the path to the PowerShell binary for the current edition of PowerShell.
 
     On 64-bit versions of Windows PowerShell, it returns the path to the PowerShell binary that matches the architecture
-    of the operating system, regardless of the architecture of Windows PowerShell. Use the `x86` switch to get back the
-    path to a 32-bit operating system.
+    of the operating system, regardless of the architecture of Windows PowerShell. Use the `x86` switch to get the
+    path to a 32-bit PowerShell.
 
-    Here are the possible combinations of operating system, PowerShell, and desired path architectures, and the path
-    they map to.
-
-        +-----+-----+------+--------------------------------------------------------------+
-        | OS  | PS  | Path | Result                                                       |
-        +-----+-----+------+--------------------------------------------------------------+
-        | x64 | x64 | x64  | $env:windir\System32\Windows PowerShell\v1.0\powershell.exe  |
-        | x64 | x64 | x86  | $env:windir\SysWOW64\Windows PowerShell\v1.0\powershell.exe  |
-        | x64 | x86 | x64  | $env:windir\sysnative\Windows PowerShell\v1.0\powershell.exe |
-        | x64 | x86 | x86  | $env:windir\SysWOW64\Windows PowerShell\v1.0\powershell.exe  |
-        | x86 | x86 | x64  | $env:windir\System32\Windows PowerShell\v1.0\powershell.exe  |
-        | x86 | x86 | x86  | $env:windir\System32\Windows PowerShell\v1.0\powershell.exe  |
-        +-----+-----+------+--------------------------------------------------------------+
+    On non-Windows operating systems, if you request a 32-bit version of PowerShell with teh `x86` switch, the function
+    writes an error because there are no known mixed x86/x64 platforms other than Windows so requesting an explicit
+    32-bit version doesn't make sense.
 
     .EXAMPLE
     Get-CPowerShellPath
@@ -57,76 +47,117 @@ function Get-CPowerShellPath
     }
 
     $executableName = $cmdName
-    if( (Test-COperatingSystem -IsWindows) )
+    if ((Test-COperatingSystem -IsWindows))
     {
         $executableName = "$($cmdName).exe"
     }
 
-    Write-Debug -Message "  Edition                        $($edition)"
+    Write-Debug -Message "  Edition          $($edition)"
 
-    if (-not (Test-COperatingSystem -IsWindows))
+    if (-not $IsWindows)
     {
+        if ($x86)
+        {
+            $msg = "The $($PSVersionTable['Platform']) does not support simultaneous x86/x64."
+            Write-Warning -Message $msg -ErrorAction $ErrorActionPreference
+        }
         return Join-Path -Path $PSHOME -ChildPath $executableName -Resolve
     }
 
-    # Map the system directory name from the current PowerShell architecture to the requested architecture.
-    $sysDirNames = @{
-        'powershell' = @{
-            # If PowerShell is 64-bit
-            'x64' = @{
-                # These are paths to PowerShell matching requested architecture.
-                'x64' = 'System32';
-                'x86' = 'SysWOW64';
-            };
-            # If PowerShell is 32-bit.
-            'x86' = @{
-                # These are the paths to get to the appropriate architecture.
-                'x64' = 'sysnative';
-                'x86' = 'System32';
-            }
+    if ($edition -eq 'Desktop')
+    {
+        $system = [Environment]::GetFolderPath('System') | Split-Path -Leaf
+        $systemx86 = [Environment]::GetFolderPath('Systemx86') | Split-Path -Leaf
+        $systemx64 = 'sysnative'
+
+        $psHomeDirName = @{
+            'x64' = $system;
+            'x86' = $systemx86;
         }
-        'pwsh' = @{
-            # If PowerShell is 64-bit
-            'x64' = @{
-                # These are paths to PowerShell matching requested architecture.
-                'x64' = 'Program Files';
-                'x86' = 'Program Files (x86)';
-            };
-            # If PowerShell is 32-bit.
-            'x86' = @{
-                # These are the paths to get to the appropriate architecture.
-                'x64' = 'Program Files';
-                'x86' = 'Program Files (x86)';
-            }
+
+        $resolvedPaths = @{
+            'x64-x64-x64' = $system;
+            'x64-x64-x86' = $systemx86
+            'x64-x86-x64' = $systemx64;
+            'x64-x86-x86' = $system;
+            'x86-x64-x64' = $system;
+            'x86-x64-x86' = $system;
+            'x86-x86-x64' = $system;
+            'x86-x86-x86' = $system;
         }
     }
-
-    # PowerShell is always in the same place on x86 Windows.
-    $osArchitecture = 'x64'
-    if( (Test-COperatingSystem -Is32Bit) )
+    else
     {
-        $osArchitecture = 'x32'
-        return Join-Path -Path $PSHOME -ChildPath $executableName
-    }
-    Write-Debug -Message "  Operating System Architecture  $($osArchitecture)"
+        $programFilesx86 = [Environment]::GetFolderPath('ProgramFilesx86') | Split-Path -Leaf
+        $programFilesx64 = $env:ProgramW6432
+        if (-not $programFilesx86)
+        {
+            $programFilesx64 = [Environment]::GetFolderPath('ProgramFiles') -replace ' \(x86\)', ''
+        }
+        $programFilesx64 = $programFilesx64 | Split-Path -Leaf
+        $programFiles = [Environment]::GetFolderPath('ProgramFiles') | Split-Path -Leaf
 
-    $architecture = 'x64'
-    if( $x86 )
+        Write-Debug "  PSHOME           ${PSHOME}"
+        Write-Debug "  ProgramFiles     ${programFiles}"
+        Write-Debug "  ProgramFilesx86  ${programFilesx86}"
+        Write-Debug "  ProgramFilesx64  ${programFilesx64}"
+
+        $psHomeDirName = @{
+            'x64' = $programFilesx64;
+            'x86' = $programFilesx86;
+        }
+
+        $resolvedPaths = @{
+            'x64-x64-x64' = $programFilesx64;
+            'x64-x64-x86' = $programFilesx86;
+            'x64-x86-x64' = $programFilesx64;
+            'x64-x86-x86' = $programFilesx86;
+            'x86-x64-x64' = $programFilesx64;
+            'x86-x64-x86' = $programFilesx64;
+            'x86-x86-x64' = $programFilesx64;
+            'x86-x86-x86' = $programFilesx64;
+        }
+    }
+
+    Write-Debug "  PSHOME Architecture Map:"
+    foreach ($key in ($psHomeDirName.Keys | Sort-Object))
     {
-        $architecture = 'x86'
+        Write-Debug "    ${key}              $($psHomeDirName[$key])"
     }
 
-    $psArchitecture = 'x64'
-    if ((Test-CPowerShell -Is32Bit))
+    Write-Debug "  Architecture Map:"
+    foreach ($key in ($resolvedPaths.Keys | Sort-Object))
     {
-        $psArchitecture = 'x86'
+        Write-Debug "    ${key}      $($resolvedPaths[$key])"
     }
 
-    Write-Debug -Message "  PowerShell Architecture        $($psArchitecture)"
-    Write-Debug -Message "  Requested Architecture         $($architecture)"
-    $sysDirName = $sysDirNames[$cmdName][$psArchitecture][$architecture]
-    Write-Debug -Message "  Architecture SysDirName        $($sysDirName)"
+    $osArch = 'x64'
+    if (Test-COperatingSystem -Is32Bit)
+    {
+        $osArch = 'x86'
+    }
 
-    $path = $PSHOME -replace '(Program Files( \(x86\))?)|(\bSystem32|SysWOW64\b)', $sysDirName
-    return Join-Path -Path $path -ChildPath $executableName
+    $psArch = 'x64'
+    if (Test-CPowerShell -Is32Bit)
+    {
+        $psArch = 'x86'
+    }
+
+    $requestedPsArch = 'x64'
+    if ($x86)
+    {
+        $requestedPsArch = 'x86'
+    }
+
+    $key = "${osArch}-${psArch}-${requestedPsArch}"
+    Write-Debug "  Architecture:"
+    Write-Debug "    ${key}"
+    $regex = "(\\|/)$([regex]::Escape($psHomeDirName[$psArch]))(\\|/)"
+    $resolvedPath = $resolvedPaths[$key]
+    Write-Debug "  ""${PSHome}"" -replace ""${regex}"", ""`$1${resolvedPath}`$2"""
+    $dirPath = $PSHome -replace $regex, "`$1${resolvedPath}`$2"
+    Write-Debug "  ${dirPath}"
+    $fullPath = Join-Path -Path $dirPath -ChildPath $executableName
+    Write-Debug "  ${fullPath}"
+    return $fullPath
 }

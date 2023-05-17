@@ -50,7 +50,7 @@ function Get-CPowerShellPath
 
     $cmdName = 'powershell'
     $edition = 'Desktop'
-    if( (Test-CPowerShell -IsCore) )
+    if ((Test-CPowerShell -IsCore))
     {
         $edition = 'Core'
         $cmdName = 'pwsh'
@@ -64,7 +64,7 @@ function Get-CPowerShellPath
 
     Write-Debug -Message "  Edition                        $($edition)"
 
-    if (-not $IsWindows)
+    if (-not (Test-COperatingSystem -IsWindows))
     {
         return Join-Path -Path $PSHOME -ChildPath $executableName -Resolve
     }

@@ -66,7 +66,7 @@ BeforeAll {
     }
 }
 
-Describe 'Invoke-CPowerShell.when requesting a 32-bit PowerShell' {
+Describe 'Invoke-CPowerShell' {
     BeforeEach {
         $Global:Error.Clear()
         $script:output = $null
@@ -79,26 +79,14 @@ Describe 'Invoke-CPowerShell.when requesting a 32-bit PowerShell' {
         Set-Variable -Name 'IsMacOS' -Value $false -Scope Local
     }
 
-    $IsDesktop = $PSVersionTable['PSEdition'] -eq 'Desktop'
-    $IsCore = -not $IsDesktop
-
-    Context 'On PowerShell Core' -Skip:(-not $IsCore) {
-        It 'should run under same architecture as this test' {
-            WhenRunningPowerShell -WithArgs '-Command', '"[Environment]::Is64BitProcess"' -As32Bit
-            ThenOutputIs ([Environment]::Is64BitProcess).ToString()
-        }
+    It 'runs under OS architecture by default' {
+        WhenRunningPowerShell -WithArgs '-Command', '[Environment]::Is64BitProcess'
+        ThenOutputIs ([Environment]::Is64BitOperatingSystem).ToString()
     }
 
-    Context 'On Windows' -Skip:(-not $IsWindows) {
-        It 'runs x86 PowerShell' {
-            WhenRunningPowerShell -WithArgs '-Command', '"[Environment]::Is64BitProcess"' -As32Bit
-            ThenOutputIs $false.ToString()
-        }
-
-        It 'runs current OS architecture by default' {
-            WhenRunningPowerShell -WithArgs '-Command', '"[Environment]::Is64BitProcess"'
-            ThenOutputIs ([Environment]::Is64BitOperatingSystem).ToString()
-        }
+    It 'runs x86 PowerShell' -Skip:(-not $IsWindows) {
+        WhenRunningPowerShell -WithArgs '-Command', '[Environment]::Is64BitProcess' -As32Bit
+        ThenOutputIs $false.ToString()
     }
 
     # On macOS/Linux, there's a bug in Start-Job that prevents it from launching as another user.
@@ -111,7 +99,7 @@ Describe 'Invoke-CPowerShell.when requesting a 32-bit PowerShell' {
         [Environment]::CurrentDirectory = $root
         try
         {
-            WhenRunningPowerShell -WithArgs '-Command', '"[Environment]::UserName"' -As $testCredential
+            WhenRunningPowerShell -WithArgs '-Command', '[Environment]::UserName' -As $testCredential
             ThenOutputIs $testCredential.UserName
         }
         finally

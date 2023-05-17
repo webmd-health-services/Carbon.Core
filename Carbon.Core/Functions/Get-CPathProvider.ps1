@@ -30,32 +30,39 @@ function Get-CPathProvider
     Set-StrictMode -Version 'Latest'
     Use-CallerPreference -Cmdlet $PSCmdlet -Session $ExecutionContext.SessionState
 
-    $pathQualifier = Split-Path -Qualifier $Path -ErrorAction SilentlyContinue
-    if( -not $pathQualifier )
+    # If the path exists, easy.
+    if (Test-Path -Path $Path)
     {
-        $Path = Join-Path -Path (Get-Location) -ChildPath $Path
-        $pathQualifier = Split-Path -Qualifier $Path -ErrorAction SilentlyContinue
-        if( -not $pathQualifier )
+        return (Get-Item -Path $Path).PSProvider
+    }
+
+    foreach ($drive in (Get-PSDrive))
+    {
+        $provider = $drive.Provider
+        $driveRootPath = $drive.Name
+        if (-not ($provider | Get-Member -Name 'VolumeSeparatedByColon') -or $provider.VolumeSeparatedByColon)
         {
-            Write-Error "Qualifier for path '$Path' not found."
-            return
+            $driveRootPath = "${driveRootPath}:"
+        }
+
+        $driveRootPath = Join-Path -Path $driveRootPath -ChildPath ([IO.Path]::DirectorySeparatorChar)
+
+        if ($Path.StartsWith($driveRootPath, [StringComparison]::CurrentCultureIgnoreCase))
+        {
+            return $provider
         }
     }
 
-    $pathQualifier = $pathQualifier.Trim(':')
-    $drive = Get-PSDrive -Name $pathQualifier -ErrorAction Ignore
-    if( -not $drive )
+    $currentPath = (Get-Location).Path
+    if (-not ($Path.StartsWith($currentPath, [StringComparison]::CurrentCultureIgnoreCase)))
     {
-        $drive = Get-PSDrive -PSProvider $pathQualifier -ErrorAction Ignore
+        $provider = Get-CPathProvider -Path (Join-Path -Path $currentPath -ChildPath $Path) -ErrorAction Ignore
+        if ($provider)
+        {
+            return $provider
+        }
     }
 
-    if( -not $drive )
-    {
-        Write-Error -Message ('Unable to determine the provider for path {0}.' -f $Path)
-        return
-    }
-
-    $drive  |
-        Select-Object -First 1 |
-        Select-Object -ExpandProperty 'Provider'
+    $msg = "Unable to determine the provider for path ""${Path}""."
+    Write-Error -Message $msg -ErrorAction $ErrorActionPreference
 }

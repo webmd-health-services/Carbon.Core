@@ -19,7 +19,13 @@ Describe 'Get-CPathProvider' {
         ((Get-CPathProvider -Path '..\').Name) | Should -Be 'FileSystem'
     }
 
+    It 'get no provider for bad path' {
+        (Get-CPathProvider -Path (Join-Path -Path $script:rootPath -ChildPath 'I\Do\Not\Exist')).Name |
+            Should -Be 'FileSystem'
+    }
+
     $noRegProvider = -not (Get-PSProvider -PSProvider 'Registry' -ErrorAction Ignore)
+
     It 'gets registry provider' -Skip:$noRegProvider {
         ((Get-CPathProvider -Path 'hklm:\software').Name) | Should -Be 'Registry'
     }
@@ -34,11 +40,6 @@ Describe 'Get-CPathProvider' {
         {
             Pop-Location
         }
-    }
-
-    It 'get no provider for bad path' {
-        (Get-CPathProvider -Path (Join-Path -Path $script:rootPath -ChildPath 'I\Do\Not\Exist')).Name |
-            Should -Be 'FileSystem'
     }
 
     It 'gets registry' -Skip:$noRegProvider {

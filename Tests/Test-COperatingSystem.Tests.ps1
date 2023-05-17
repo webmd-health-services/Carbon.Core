@@ -6,6 +6,14 @@ BeforeAll {
     Set-StrictMode -Version 'Latest'
 
     & (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
+
+    $script:wow64Path = [Environment]::GetFolderPath('Windows')
+    if ($script:wow64Path)
+    {
+        $script:wow64Path = Join-Path -Path $script:wow64Path -ChildPath 'SysWOW64'
+    }
+
+    Write-Information "Has32Bit  $(Test-COperatingSystem -Has32Bit)" -InformationAction Continue
 }
 
 Describe 'Test-COperatingSystem' {
@@ -62,6 +70,9 @@ Describe 'Test-COperatingSystem' {
                 Test-COperatingSystem -IsWindows | Should -BeTrue
             }
         }
+        It 'detects if Windows-on-Windows 64 is installed' {
+            Test-COperatingSystem -Has32Bit | Should -Be (Test-Path -Path $script:wow64Path)
+        }
     }
 
     Context 'Linux' -Skip:(-not $onLinux) {
@@ -80,6 +91,9 @@ Describe 'Test-COperatingSystem' {
                 Test-COperatingSystem -IsWindows | Should -BeFalse
             }
         }
+        It 'detects if Windows-on-Windows 64 is installed' {
+            Test-COperatingSystem -Has32Bit | Should -BeFalse
+        }
     }
     Context 'macOS' -Skip:(-not $onMac) {
         Context 'when testing if OS is Linux' {
@@ -96,6 +110,9 @@ Describe 'Test-COperatingSystem' {
             It 'should return $false' {
                 Test-COperatingSystem -IsWindows | Should -BeFalse
             }
+        }
+        It 'detects if Windows-on-Windows 64 is installed' {
+            Test-COperatingSystem -Has32Bit | Should -BeFalse
         }
     }
 }

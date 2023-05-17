@@ -24,6 +24,8 @@ value.
 convert a `CContainerPropagationFlags` value into a `System.Security.AccessControl.PropagationFlags`
 value.
 * Function `Get-CPathProvider` (migrated from Carbon), used to get a provider from a path.
+* `Has32Bit` switch to `Test-COperatingSystem`, to check if the Windows-on-Windows 64 subsystem is installed (i.e. you
+can run 32-bit programs).
 
 ### Fixed
 

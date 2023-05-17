@@ -4,10 +4,10 @@ function Test-COperatingSystem
     <#
     .SYNOPSIS
     Tests attributes of the current operating system.
-    
+
     .DESCRIPTION
     The `Test-COperatingSystem` function tests atrributes of the current operating system, returning `$true` if they
-    are `$true` and `$false` otherwise. It supports the following switches (only one can be given at at time) that 
+    are `$true` and `$false` otherwise. It supports the following switches (only one can be given at at time) that
     return the following attributes:
 
     * `Is32Bit`: is the architecture 32-bit? Uses `[Environment]::Is64BitOperatingSystem`.
@@ -25,63 +25,78 @@ function Test-COperatingSystem
 
     .LINK
     http://msdn.microsoft.com/en-us/library/system.environment.is64bitoperatingsystem.aspx
-    
+
     .EXAMPLE
     Test-COperatingSystem -Is32Bit
-    
+
     Demonstrates how to test if the current operating system is 32-bit/x86.
 
     .EXAMPLE
     Test-COperatingSystem -Is64Bit
-    
+
     Demonstrates how to test if the current operating system is 64-bit/x64.
 
     .EXAMPLE
     Test-COperatingSystem -IsWindows
-    
+
     Demonstrates how to test if the current operating system is Windows.
 
     .EXAMPLE
     Test-COperatingSystem -IsLinux
-    
+
     Demonstrates how to test if the current operating system is Linux.
 
     .EXAMPLE
     Test-COperatingSystem -IsMacOS
-    
+
     Demonstrates how to test if the current operating system is macOS.
 
     #>
     [CmdletBinding()]
     [OutputType([bool])]
     param(
-        [Parameter(Mandatory,ParameterSetName='Is32Bit')]
-        [switch]$Is32Bit,
+        [Parameter(Mandatory, ParameterSetName='Is32Bit')]
+        [switch] $Is32Bit,
 
-        [Parameter(Mandatory,ParameterSetName='Is64Bit')]
-        [switch]$Is64Bit,
+        [Parameter(Mandatory, ParameterSetName='Is64Bit')]
+        [switch] $Is64Bit,
 
-        [Parameter(Mandatory,ParameterSetName='IsWindows')]
+        [Parameter(Mandatory, ParameterSetName='Has32Bit')]
+        [switch] $Has32Bit,
+
+        [Parameter(Mandatory, ParameterSetName='IsWindows')]
         [Alias('IsWindows')]
-        [switch]$Windows,
+        [switch] $Windows,
 
-        [Parameter(Mandatory,ParameterSetName='IsLinux')]
+        [Parameter(Mandatory, ParameterSetName='IsLinux')]
         [Alias('IsLinux')]
-        [switch]$Linux,
+        [switch] $Linux,
 
-        [Parameter(Mandatory,ParameterSetName='IsMacOS')]
+        [Parameter(Mandatory, ParameterSetName='IsMacOS')]
         [Alias('IsMacOS')]
-        [switch]$MacOS
+        [switch] $MacOS
     )
-    
+
     Set-StrictMode -Version 'Latest'
     Use-CallerPreference -Cmdlet $PSCmdlet -Session $ExecutionContext.SessionState
 
     switch( $PSCmdlet.ParameterSetName )
     {
+        'Has32Bit'
+        {
+            $wow64Path = [Environment]::GetFolderPath('Windows')
+            if (-not $wow64Path)
+            {
+                return $false
+            }
+
+            $wow64Path = Join-Path -Path $wow64Path -ChildPath 'SysWOW64'
+            return (Test-Path -Path $wow64Path -PathType Container)
+        }
         'Is32Bit' { return -not [Environment]::Is64BitOperatingSystem }
         'Is64Bit' { return [Environment]::Is64BitOperatingSystem }
-        'IsWindows' {
+        'IsWindows'
+        {
             if( (Test-Path -Path 'variable:IsWindows') )
             {
                 return $IsWindows

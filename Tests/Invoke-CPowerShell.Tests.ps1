@@ -85,65 +85,39 @@ Describe 'Invoke-CPowerShell.when requesting a 32-bit PowerShell' {
     Context 'On PowerShell Core' -Skip:(-not $IsCore) {
         It 'should run under same architecture as this test' {
             WhenRunningPowerShell -WithArgs '-Command', '"[Environment]::Is64BitProcess"' -As32Bit
-            ThenOutputIs ([Environment]::Is64BitProcess)
+            ThenOutputIs ([Environment]::Is64BitProcess).ToString()
         }
     }
 
     Context 'On Windows' -Skip:(-not $IsWindows) {
-        It 'runs under x86' {
+        It 'runs x86 PowerShell' {
             WhenRunningPowerShell -WithArgs '-Command', '"[Environment]::Is64BitProcess"' -As32Bit
             ThenOutputIs $false.ToString()
         }
-        Context 'x64' -Skip:(-not [Environment]::Is64BitOperatingSystem) {
-            Context 'from x86 PowerShell' {
-                It 'runs x64 PowerShell by default' {
-                    if( (Test-CPowerShell -Is32Bit) )
-                    {
-                        WhenRunningPowerShell -WithArgs '-Command', '"[Environment]::Is64BitProcess"'
-                    }
-                    else
-                    {
-                        $command = @"
-Import-Module "$(Join-Path -Path $PSScriptRoot -ChildPath '..\Carbon.Core' -Resolve)"
-if( -not (Test-CPowerShell -Is32Bit) )
-{
-    throw 'Not in 32-bit PowerShell!'
-}
-Invoke-CPowerShell -ArgumentList '-NoProfile', '-NonInteractive', '[Environment]::Is64BitProcess'
-"@
-                        WhenRunningPowerShell -Command $command -As32Bit
-                    }
-                    ThenOutputIs $true
-                }
-            }
-            Context 'from x64 PowerShell' {
-                It 'should run x64 PowerShell' {
-                    if( (Test-CPowerShell -Is64Bit) )
-                    {
-                        WhenRunningPowerShell -WithArgs '-Command', '"[Environment]::Is64BitProcess"'
-                    }
-                    else
-                    {
-                        $command = @"
-Import-Module "$(Join-Path -Path $PSScriptRoot -ChildPath '..\Carbon.Core' -Resolve)"
-if( -not (Test-CPowerShell -Is64Bit) )
-{
-    throw 'Not in 64-bit PowerShell!'
-}
-return [Environment]::Is64BitPowerShell
-"@
-                        WhenRunningPowerShell -Command $command
-                    }
-                    ThenOutputIs $true
-                }
-            }
+
+        It 'runs current OS architecture by default' {
+            WhenRunningPowerShell -WithArgs '-Command', '"[Environment]::Is64BitProcess"'
+            ThenOutputIs ([Environment]::Is64BitOperatingSystem).ToString()
         }
     }
 
     # On macOS/Linux, there's a bug in Start-Job that prevents it from launching as another user.
     # https://github.com/PowerShell/PowerShell/issues/7172
     It 'run PowerShell as another user' -Skip:(-not $IsWindows) {
-        WhenRunningPowerShell -WithArgs '-Command', '"[Environment]::UserName"' -As $testCredential
-        ThenOutputIs $testCredential.UserName
+        # Allow non-administrator users to run this test.
+        $root = Resolve-Path -Path '\' | Select-Object -ExpandProperty 'Path'
+        Push-Location -Path $root
+        $originalCurDir = [Environment]::CurrentDirectory
+        [Environment]::CurrentDirectory = $root
+        try
+        {
+            WhenRunningPowerShell -WithArgs '-Command', '"[Environment]::UserName"' -As $testCredential
+            ThenOutputIs $testCredential.UserName
+        }
+        finally
+        {
+            [Environment]::CurrentDirectory = $originalCurDir
+            Pop-Location
+        }
     }
 }

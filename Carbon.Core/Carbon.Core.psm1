@@ -42,6 +42,13 @@ enum CContainerInheritanceFlags
     ChildContainersAndChildLeaves =                                                 0x08 -bor   0x10
 }
 
+if (-not (Test-Path -Path 'variable:IsWindows'))
+{
+    Set-Variable -Name 'IsWindows' -Value $true -Scope Script
+    Set-Variable -Name 'IsLinux' -Value $false -Scope Script
+    Set-Variable -Name 'IsMacOS' -Value $false -Scope Script
+}
+
 # Store each of your module's functions in its own file in the Functions
 # directory. On the build server, your module's functions will be appended to
 # this file, so only dot-source files that exist on the file system. This allows

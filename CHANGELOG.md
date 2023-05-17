@@ -25,6 +25,11 @@ convert a `CContainerPropagationFlags` value into a `System.Security.AccessContr
 value.
 * Function `Get-CPathProvider` (migrated from Carbon), used to get a provider from a path.
 
+### Fixed
+
+* `Invoke-CPowerShell` fails on Windows when running PowerShell as a non-administrator.
+* `Get-CPowerShellPath` returns the wrong paths under PowerShell (Core).
+
 
 ## 1.2.0
 

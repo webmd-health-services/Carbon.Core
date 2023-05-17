@@ -1,17 +1,20 @@
 
-function Get-CPowershellPath
+function Get-CPowerShellPath
 {
     <#
     .SYNOPSIS
     Gets the path to powershell.exe.
 
     .DESCRIPTION
-    Returns the path to the powershell.exe binary for the machine's default architecture (i.e. x86 or x64).  If you're
-    on a x64 machine and want to get the path to x86 PowerShell, set the `x86` switch.
-    
+    The `Get-CPowerShellPath` function returns the path to the PowerShell binary for the current edition of PowerShell.
+
+    On 64-bit versions of Windows PowerShell, it returns the path to the PowerShell binary that matches the architecture
+    of the operating system, regardless of the architecture of Windows PowerShell. Use the `x86` switch to get back the
+    path to a 32-bit operating system.
+
     Here are the possible combinations of operating system, PowerShell, and desired path architectures, and the path
     they map to.
-    
+
         +-----+-----+------+--------------------------------------------------------------+
         | OS  | PS  | Path | Result                                                       |
         +-----+-----+------+--------------------------------------------------------------+
@@ -22,7 +25,7 @@ function Get-CPowershellPath
         | x86 | x86 | x64  | $env:windir\System32\Windows PowerShell\v1.0\powershell.exe  |
         | x86 | x86 | x86  | $env:windir\System32\Windows PowerShell\v1.0\powershell.exe  |
         +-----+-----+------+--------------------------------------------------------------+
-    
+
     .EXAMPLE
     Get-CPowerShellPath
 
@@ -35,44 +38,68 @@ function Get-CPowershellPath
     #>
     [CmdletBinding()]
     param(
-        # The architecture of the PowerShell executable to run. The default is the architecture of the current 
+        # The architecture of the PowerShell executable to run. The default is the architecture of the current
         # process.
-        [switch]$x86
+        [switch] $x86
     )
-    
+
     Set-StrictMode -Version 'Latest'
     Use-CallerPreference -Cmdlet $PSCmdlet -Session $ExecutionContext.SessionState
 
-    Write-Debug "[Carbon\Get-CPowerShellPath]"
+    Write-Debug "[Carbon.Core\Get-CPowerShellPath]"
 
-    # Map the system directory name from the current PowerShell architecture to the requested architecture.
-    $sysDirNames = @{
-        # If PowerShell is 64-bit
-        'x64' = @{
-            # These are paths to PowerShell matching requested architecture.
-            'x64' = 'System32';
-            'x86' = 'SysWOW64';
-        };
-        # If PowerShell is 32-bit.
-        'x86' = @{
-            # These are the paths to get to the appropriate architecture.
-            'x64' = 'sysnative';
-            'x86' = 'System32';
-        }
-    }
-
-    $executableName = 'powershell.exe'
+    $cmdName = 'powershell'
     $edition = 'Desktop'
     if( (Test-CPowerShell -IsCore) )
     {
         $edition = 'Core'
-        $executableName = 'pwsh'
-        if( (Test-COperatingSystem -IsWindows) )
-        {
-            $executableName = "$($executableName).exe"
+        $cmdName = 'pwsh'
+    }
+
+    $executableName = $cmdName
+    if( (Test-COperatingSystem -IsWindows) )
+    {
+        $executableName = "$($cmdName).exe"
+    }
+
+    Write-Debug -Message "  Edition                        $($edition)"
+
+    if (-not $IsWindows)
+    {
+        return Join-Path -Path $PSHOME -ChildPath $executableName -Resolve
+    }
+
+    # Map the system directory name from the current PowerShell architecture to the requested architecture.
+    $sysDirNames = @{
+        'powershell' = @{
+            # If PowerShell is 64-bit
+            'x64' = @{
+                # These are paths to PowerShell matching requested architecture.
+                'x64' = 'System32';
+                'x86' = 'SysWOW64';
+            };
+            # If PowerShell is 32-bit.
+            'x86' = @{
+                # These are the paths to get to the appropriate architecture.
+                'x64' = 'sysnative';
+                'x86' = 'System32';
+            }
+        }
+        'pwsh' = @{
+            # If PowerShell is 64-bit
+            'x64' = @{
+                # These are paths to PowerShell matching requested architecture.
+                'x64' = 'Program Files';
+                'x86' = 'Program Files (x86)';
+            };
+            # If PowerShell is 32-bit.
+            'x86' = @{
+                # These are the paths to get to the appropriate architecture.
+                'x64' = 'Program Files';
+                'x86' = 'Program Files (x86)';
+            }
         }
     }
-    Write-Debug -Message "  Edition                        $($edition)"
 
     # PowerShell is always in the same place on x86 Windows.
     $osArchitecture = 'x64'
@@ -90,16 +117,16 @@ function Get-CPowershellPath
     }
 
     $psArchitecture = 'x64'
-    if( (Test-CPowerShell -Is32Bit) )
+    if ((Test-CPowerShell -Is32Bit))
     {
         $psArchitecture = 'x86'
     }
 
     Write-Debug -Message "  PowerShell Architecture        $($psArchitecture)"
     Write-Debug -Message "  Requested Architecture         $($architecture)"
-    $sysDirName = $sysDirNames[$psArchitecture][$architecture]
+    $sysDirName = $sysDirNames[$cmdName][$psArchitecture][$architecture]
     Write-Debug -Message "  Architecture SysDirName        $($sysDirName)"
 
-    $path = $PSHOME -replace '\b(System32|SysWOW64)\b', $sysDirName
+    $path = $PSHOME -replace '(Program Files( \(x86\))?)|(\bSystem32|SysWOW64\b)', $sysDirName
     return Join-Path -Path $path -ChildPath $executableName
 }

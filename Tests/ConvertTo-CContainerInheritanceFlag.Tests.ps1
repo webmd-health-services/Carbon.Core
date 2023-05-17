@@ -14,7 +14,9 @@ BeforeAll {
     $script:userCredential = Get-TestUser -Name 'CCntnrFlags'
 }
 
-Describe 'ConvertTo-CContainerInheritanceFlag' {
+$skip = -not (Get-PSProvider | Where-Object 'Name' -eq 'Registry')
+
+Describe 'ConvertTo-CContainerInheritanceFlag' -Skip:$skip {
     BeforeEach {
         $script:testDirPath = Join-Path -Path $TestDrive -ChildPath $script:testNum
         New-Item -Path $script:testDirPath -ItemType 'Directory'

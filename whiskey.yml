@@ -74,7 +74,6 @@ Build:
             - "*\\Carbon.Core.Tests.ps1"
             - "*\\ConvertTo-CBase64.Tests.ps1"
             - "*\\Get-CPowerShellPath.Tests.ps1"
-            - "*\\Test-COperatingSystem.Tests.ps1"
             - "*\\Test-CPowerShell.Tests.ps1"
         Output:
             Verbosity: Detailed
@@ -84,6 +83,5 @@ Build:
     - Tests\ConvertTo-CBase64.Tests.ps1
     - Tests\Get-CPowerShellPath.Tests.ps1
     - Tests\Resolve-CFullPath.Tests.ps1
-    - Tests\Test-COperatingSystem.Tests.ps1
     - Tests\Test-CPowerShell.Tests.ps1
 

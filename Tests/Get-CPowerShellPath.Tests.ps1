@@ -8,9 +8,12 @@ BeforeAll {
     & (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
 
     $winDir = [Environment]::GetFolderPath('Windows')
-    $script:system32Path = Join-Path -Path $windir -ChildPath 'System32\WindowsPowerShell\v1.0\powershell.exe'
-    $script:sysnativePath = Join-Path -Path $windir -ChildPath 'sysnative\WindowsPowerShell\v1.0\powershell.exe'
-    $script:sysWowPath = Join-Path -Path $windir -ChildPath 'SysWOW64\WindowsPowerShell\v1.0\powershell.exe'
+    if ($winDir)
+    {
+        $script:system32Path = Join-Path -Path $windir -ChildPath 'System32\WindowsPowerShell\v1.0\powershell.exe'
+        $script:sysnativePath = Join-Path -Path $windir -ChildPath 'sysnative\WindowsPowerShell\v1.0\powershell.exe'
+        $script:sysWowPath = Join-Path -Path $windir -ChildPath 'SysWOW64\WindowsPowerShell\v1.0\powershell.exe'
+    }
 
     function GivenOSIs32Bit
     {

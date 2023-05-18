@@ -85,7 +85,10 @@ Describe 'Invoke-CPowerShell' {
     }
 
     $x86PsInstalled = Test-Path -Path 'C:\Program Files (x86)\PowerShell\*\pwsh.exe'
-    It 'runs x86 PowerShell' -Skip:(-not $IsWindows -and -not $x86PsInstalled) {
+    Write-Information "IsWindows       ${IsWindows}" -InformationAction Continue
+    Write-Information "x86PsInstalled  ${x86PsInstalled}" -InformationAction Continue
+    Write-Information "Skip            $(-not $IsWindows -or -not $x86PsInstalled)" -InformationAction Continue
+    It 'runs x86 PowerShell' -Skip:(-not $IsWindows -or -not $x86PsInstalled) {
         WhenRunningPowerShell -WithArgs '-Command', '[Environment]::Is64BitProcess' -As32Bit
         ThenOutputIs $false.ToString()
     }

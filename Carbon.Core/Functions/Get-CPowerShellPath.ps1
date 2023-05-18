@@ -38,6 +38,8 @@ function Get-CPowerShellPath
 
     Write-Debug "[Carbon.Core\Get-CPowerShellPath]"
 
+    $psHomePath = Get-Variable -Name 'PSHOME' -ValueOnly
+
     $cmdName = 'powershell'
     $edition = 'Desktop'
     if ((Test-CPowerShell -IsCore))
@@ -52,7 +54,7 @@ function Get-CPowerShellPath
         $executableName = "$($cmdName).exe"
     }
 
-    Write-Debug -Message "  Edition          $($edition)"
+    Write-Debug -Message "  Edition            $($edition)"
 
     if (-not $IsWindows)
     {
@@ -61,7 +63,7 @@ function Get-CPowerShellPath
             $msg = "The $($PSVersionTable['Platform']) does not support simultaneous x86/x64."
             Write-Warning -Message $msg -ErrorAction $ErrorActionPreference
         }
-        return Join-Path -Path $PSHOME -ChildPath $executableName -Resolve
+        return Join-Path -Path $psHomePath -ChildPath $executableName -Resolve
     }
 
     if ($edition -eq 'Desktop')
@@ -97,7 +99,7 @@ function Get-CPowerShellPath
         $programFilesx64 = $programFilesx64 | Split-Path -Leaf
         $programFiles = [Environment]::GetFolderPath('ProgramFiles') | Split-Path -Leaf
 
-        Write-Debug "  PSHOME           ${PSHOME}"
+        Write-Debug "  PSHOME           ${psHomePath}"
         Write-Debug "  ProgramFiles     ${programFiles}"
         Write-Debug "  ProgramFilesx86  ${programFilesx86}"
         Write-Debug "  ProgramFilesx64  ${programFilesx64}"
@@ -154,8 +156,8 @@ function Get-CPowerShellPath
     Write-Debug "    ${key}"
     $regex = "(\\|/)$([regex]::Escape($psHomeDirName[$psArch]))(\\|/)"
     $resolvedPath = $resolvedPaths[$key]
-    Write-Debug "  ""${PSHome}"" -replace ""${regex}"", ""`$1${resolvedPath}`$2"""
-    $dirPath = $PSHome -replace $regex, "`$1${resolvedPath}`$2"
+    Write-Debug "  ""${psHomePath}"" -replace ""${regex}"", ""`$1${resolvedPath}`$2"""
+    $dirPath = $psHomePath -replace $regex, "`$1${resolvedPath}`$2"
     Write-Debug "  ${dirPath}"
     $fullPath = Join-Path -Path $dirPath -ChildPath $executableName
     Write-Debug "  ${fullPath}"

@@ -18,6 +18,10 @@ BeforeAll {
              -ModuleName 'Carbon.Core' `
              -ParameterFilter { $Is32Bit } `
              -MockWith { $true }
+        Mock -CommandName 'Test-COperatingSystem' `
+             -ModuleName 'Carbon.Core' `
+             -ParameterFilter { $Is64Bit } `
+             -MockWith { $false }
     }
 
     function GivenOSIs64Bit
@@ -26,6 +30,10 @@ BeforeAll {
              -ModuleName 'Carbon.Core' `
              -ParameterFilter { $Is64Bit } `
              -MockWith { $true }
+        Mock -CommandName 'Test-COperatingSystem' `
+             -ModuleName 'Carbon.Core' `
+             -ParameterFilter { $Is32Bit } `
+             -MockWith { $false }
     }
 
     function GivenPowerShellIs32Bit
@@ -34,6 +42,14 @@ BeforeAll {
              -ModuleName 'Carbon.Core' `
              -ParameterFilter { $Is32Bit } `
              -MockWith { $true }
+        Mock -CommandName 'Test-CPowerShell' `
+             -ModuleName 'Carbon.Core' `
+             -ParameterFilter { $Is64Bit } `
+             -MockWith { $false }
+        Mock -CommandName 'Get-Variable' `
+             -ModuleName 'Carbon.Core' `
+             -ParameterFilter { $Name -eq 'PSHOME' } `
+             -MockWith { return ($script:sysWowPath | Split-Path -Parent) }
     }
 
     function GivenPowerShellIs64Bit
@@ -42,6 +58,14 @@ BeforeAll {
              -ModuleName 'Carbon.Core' `
              -ParameterFilter { $Is64Bit } `
              -MockWith { $true }
+        Mock -CommandName 'Test-CPowerShell' `
+             -ModuleName 'Carbon.Core' `
+             -ParameterFilter { $Is32Bit } `
+             -MockWith { $false }
+        Mock -CommandName 'Get-Variable' `
+             -ModuleName 'Carbon.Core' `
+             -ParameterFilter { $Name -eq 'PSHOME' } `
+             -MockWith { return ($script:system32Path | Split-Path -Parent) }
     }
 }
 
@@ -57,9 +81,9 @@ Describe 'Get-CPowerShellPath' {
     $isCore = -not $isDesktop
 
     Context 'Windows' -Skip:($IsLinux -or $IsMacOS) {
-        Context 'PowerShell Desktop' -Skip:$isCore {
+        Context 'Desktop' -Skip:$isCore {
             Context 'OS x86' {
-                It 'should return path in System32' {
+                It 'returns path in system32' {
                     GivenOSIs32Bit
                     Get-CPowerShellPath | Should -Be $system32Path
                 }
@@ -68,30 +92,31 @@ Describe 'Get-CPowerShellPath' {
             Context 'OS x64' {
                 Context 'PowerShell x64' {
                     Context 'requesting default PowerShell' {
-                        It 'should return path in System32' {
+                        It 'returns path in system32' {
                             GivenOSIs64Bit
                             GivenPowerShellIs64Bit
                             Get-CPowerShellPath | Should -Be $system32Path
                         }
                     }
                     Context 'requesting x86 PowerShell' {
-                        It 'should return SysWOW64 path' {
+                        It 'returns path in SysWOW64' {
                             GivenOSIs64Bit
                             GivenPowerShellIs64Bit
                             Get-CPowerShellPath -x86 | Should -Be $sysWowPath
                         }
                     }
                 }
+
                 Context 'PowerShell x86' {
                     Context 'requesting default PowerShell' {
-                        It 'should return path in sysnative' {
+                        It 'returns path in sysnative' {
                             GivenOSIs64Bit
                             GivenPowerShellIs32Bit
                             Get-CPowerShellPath | Should -Be $sysnativePath
                         }
                     }
                     Context 'requesting x86 PowerShell' {
-                        It 'should return System32 path' {
+                        It 'returns path in System32' {
                             GivenOSIs64Bit
                             GivenPowerShellIs32Bit
                             Get-CPowerShellPath -x86 | Should -Be $system32Path
@@ -100,8 +125,12 @@ Describe 'Get-CPowerShellPath' {
                 }
             }
         }
-        Context 'PowerShell Core' -Skip:$isDesktop {
-            It 'should return pwsh.exe from PSHOME' {
+
+        $psIsx64 = [Environment]::Is64BitProcess
+        $psIsx86 = -not $psIsx64
+
+        Context 'Core' -Skip:$isDesktop {
+            It 'should return pwsh.exe from PSHOME' -Skip:$psIsx86 {
                 Get-CPowerShellPath | Should -Be (Join-Path -Path $PSHOME -ChildPath 'pwsh.exe')
             }
         }

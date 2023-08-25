@@ -3,6 +3,13 @@
 
 # Carbon.Core Changelog
 
+## 1.3.0
+
+> Released 25 Aug 2023
+
+Migrated `Get-CPathProvider` from Carbon.
+
+
 ## 1.2.0
 
 > Released 16 Feb 2023

@@ -7,7 +7,7 @@
 
 > Released 25 Aug 2023
 
-Migrated `Get-CPathProvider` from Carbon.
+Migrated `Get-CPathProvider` from Carbon. As part of the migration, it now works on Linux and macOS.
 
 
 ## 1.2.0

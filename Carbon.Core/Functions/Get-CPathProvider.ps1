@@ -23,40 +23,38 @@ function Get-CPathProvider
     [CmdletBinding()]
     param(
         # The path whose provider to get.
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory)]
         [String] $Path
     )
 
     Set-StrictMode -Version 'Latest'
     Use-CallerPreference -Cmdlet $PSCmdlet -Session $ExecutionContext.SessionState
 
-    $pathQualifier = Split-Path -Qualifier $Path -ErrorAction SilentlyContinue
-    if( -not $pathQualifier )
+    $driveName = $Path | Split-Path -Qualifier -ErrorAction Ignore
+    if (-not $driveName)
     {
-        $Path = Join-Path -Path (Get-Location) -ChildPath $Path
-        $pathQualifier = Split-Path -Qualifier $Path -ErrorAction SilentlyContinue
-        if( -not $pathQualifier )
+        $driveName = Get-Location | Split-Path -Qualifier -ErrorAction Ignore
+        if (-not $driveName)
         {
-            Write-Error "Qualifier for path '$Path' not found."
-            return
+            $driveName = (Get-Location).Path.Substring(0, 1)
         }
     }
 
-    $pathQualifier = $pathQualifier.Trim(':')
-    $drive = Get-PSDrive -Name $pathQualifier -ErrorAction Ignore
+    $driveName = $driveName.TrimEnd(':')
+
+    $drive = Get-PSDrive -Name $driveName -ErrorAction Ignore
     if( -not $drive )
     {
-        $drive = Get-PSDrive -PSProvider $pathQualifier -ErrorAction Ignore
+        $drive = Get-PSDrive -PSProvider $driveName -ErrorAction Ignore
     }
 
-    if( -not $drive )
+    if (-not $drive)
     {
-        Write-Error -Message ('Unable to determine the provider for path {0}.' -f $Path)
+        $msg = "Failed to get provider for path ${Path} because there is no drive named ""${driveName}"" and no " +
+               "that uses provider ""${driveName}""."
+        Write-Error -Message $msg -ErrorAction $ErrorActionPreference
         return
     }
 
-    $drive  |
-        Select-Object -First 1 |
-        Select-Object -ExpandProperty 'Provider'
-
+    $drive | Select-Object -First 1 | Select-Object -ExpandProperty 'Provider'
 }

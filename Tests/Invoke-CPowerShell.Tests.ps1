@@ -75,6 +75,7 @@ BeforeAll {
 }
 
 Describe 'Invoke-CPowerShell.when requesting a 32-bit PowerShell' {
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '..\Carbon.Core')
     if( (Test-COperatingSystem -IsWindows) -and (Test-CPowerShell -IsDesktop) )
     {
         Context 'On Windows' {
@@ -163,7 +164,7 @@ if( -not (Test-COperatingSystem -IsWindows) )
 Describe 'Invoke-CPowerShell.when running a script as another user' {
     It 'should run PowerShell as that user' @skip {
         Init
-        WhenRunningPowerShell -WithArgs '-Command', '"[Environment]::UserName"' -As $script:testCredential
+        WhenRunningPowerShell -WithArgs '-Command', '[Environment]::UserName' -As $script:testCredential
         ThenOutputIs $script:testCredential.UserName
     }
 }

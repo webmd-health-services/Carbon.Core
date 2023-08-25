@@ -6,9 +6,11 @@ function Get-CPathProvider
     Returns a path's PowerShell provider.
 
     .DESCRIPTION
-    When you want to do something with a path that depends on its provider, use this function.  The path doesn't have to exist.
+    When you want to do something with a path that depends on its provider, use this function.  The path doesn't have to
+    exist.
 
-    If you pass in a relative path, it is resolved relative to the current directory.  So make sure you're in the right place.
+    If you pass in a relative path, it is resolved relative to the current directory.  So make sure you're in the right
+    place.
 
     .OUTPUTS
     System.Management.Automation.ProviderInfo.
@@ -20,14 +22,12 @@ function Get-CPathProvider
     #>
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory=$true)]
-        [string]
         # The path whose provider to get.
-        $Path
+        [Parameter(Mandatory=$true)]
+        [String] $Path
     )
 
     Set-StrictMode -Version 'Latest'
-
     Use-CallerPreference -Cmdlet $PSCmdlet -Session $ExecutionContext.SessionState
 
     $pathQualifier = Split-Path -Qualifier $Path -ErrorAction SilentlyContinue

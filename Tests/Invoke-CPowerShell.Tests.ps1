@@ -1,82 +1,76 @@
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-# 
-#     http://www.apache.org/licenses/LICENSE-2.0
-# 
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
 
 #Requires -Version 5.1
 Set-StrictMode -Version 'Latest'
 
-& (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
+BeforeAll {
+    Set-StrictMode -Version 'Latest'
 
-$testCredential = Get-TestUser -Name 'CIPowerShell'
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
 
-function Init
-{
-    $Global:Error.Clear()
-    $script:output = $null
-}
+    $script:testCredential = Get-TestUser -Name 'CIPowerShell'
 
-function ThenOutputIs
-{
-    param(
-        [Object]$InputObject
-    )
 
-    $output | Should -Be $InputObject
-}
+    function Init
+    {
+        $Global:Error.Clear()
+        $script:output = $null
+    }
 
-function WhenRunningPowerShell
-{
-    param(
-        [String[]]$WithArgs,
+    function ThenOutputIs
+    {
+        param(
+            [Object]$InputObject
+        )
 
-        [String]$Command,
+        $output | Should -Be $InputObject
+    }
 
-        [switch]$As32Bit,
+    function WhenRunningPowerShell
+    {
+        param(
+            [String[]]$WithArgs,
 
-        [pscredential]$As
-    )
+            [String]$Command,
 
-    # Make tests a little faster and reduce test code clutter.
-    $WithArgs = & {
-        '-NoProfile'
-        '-NonInteractive'
-        if( $WithArgs )
-        {
-            $WithArgs
+            [switch]$As32Bit,
+
+            [pscredential]$As
+        )
+
+        # Make tests a little faster and reduce test code clutter.
+        $WithArgs = & {
+            '-NoProfile'
+            '-NonInteractive'
+            if( $WithArgs )
+            {
+                $WithArgs
+            }
         }
+
+        $conditionalParams = @{}
+        if( $Command )
+        {
+            $conditionalParams['Command'] = $Command
+        }
+
+        if( $As32Bit )
+        {
+            $conditionalParams['x86'] = $true
+        }
+
+        if( $As )
+        {
+            $conditionalParams['Credential'] = $As
+        }
+
+        $script:output = Invoke-CPowerShell -ArgumentList $WithArgs @conditionalParams
     }
 
-    $conditionalParams = @{}
-    if( $Command )
+    function Assert-EnvVarCleanedUp
     {
-        $conditionalParams['Command'] = $Command
-    }
-
-    if( $As32Bit )
-    {
-        $conditionalParams['x86'] = $true
-    }
-
-    if( $As )
-    {
-        $conditionalParams['Credential'] = $As
-    }
-
-    $script:output = Invoke-CPowerShell -ArgumentList $WithArgs @conditionalParams
-}
-
-function Assert-EnvVarCleanedUp
-{
-    It 'should clean up environment' {
-        ([Environment]::GetEnvironmentVariable('COMPLUS_ApplicationMigrationRuntimeActivationConfigPath')) | Should -BeNullOrEmpty
+        It 'should clean up environment' {
+            ([Environment]::GetEnvironmentVariable('COMPLUS_ApplicationMigrationRuntimeActivationConfigPath')) | Should -BeNullOrEmpty
+        }
     }
 }
 
@@ -106,7 +100,7 @@ Describe 'Invoke-CPowerShell.when requesting a 32-bit PowerShell' {
 if( (Test-COperatingSystem -IsWindows) -and (Test-CPowerShell -IsDesktop) )
 {
     Describe 'Invoke-CPowerShell.when running on Windows' {
-        if( (Test-COperatingSystem -Is64Bit) ) 
+        if( (Test-COperatingSystem -Is64Bit) )
         {
             Context 'x64' {
                 Context 'from x86 PowerShell' {
@@ -169,7 +163,7 @@ if( -not (Test-COperatingSystem -IsWindows) )
 Describe 'Invoke-CPowerShell.when running a script as another user' {
     It 'should run PowerShell as that user' @skip {
         Init
-        WhenRunningPowerShell -WithArgs '-Command', '"[Environment]::UserName"' -As $testCredential
-        ThenOutputIs $testCredential.UserName
+        WhenRunningPowerShell -WithArgs '-Command', '"[Environment]::UserName"' -As $script:testCredential
+        ThenOutputIs $script:testCredential.UserName
     }
 }

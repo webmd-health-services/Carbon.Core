@@ -9,13 +9,13 @@ function Test-CType
     The `Test-CType` function tests if a .NET type exists. Pass the namespace-qualified type name to the `Name`
     parameter. For the quickest and most unambiguous type resolution, pass the [assembly-qualifed type
     name](https://learn.microsoft.com/en-us/dotnet/api/system.type.assemblyqualifiedname#system-type-assemblyqualifiedname)
-    to the `Name` parameter. Otherwise, the function checks each loaded assembly for the type. If a type is found with
-    the given, returns `$true`. Otherwise, returns `$false`. It stops searching as soon as it finds a type.
+    to the `Name` parameter. Otherwise, the function checks each loaded assembly for the type. If the named type is
+    found, returns `$true`. Otherwise, returns `$false`. It stops searching as soon as it finds a type.
 
     By default, searches are case-insensitive. To perform a case-sensitive search, use the `CaseSenstive` switch.
 
-    By default, returns `$true` if at least one type exists with the given name. Otherwise, returns `$false`. Use the
-    `$PassThru` switch to get `[Type]` objects returned for all types whose names match.
+    By default, returns `$true` if at least one type exists. Otherwise, returns `$false`. Use the `$PassThru` switch to
+    get `[Type]` objects returned for all types whose names match.
 
     .EXAMPLE
     Test-CType -Name 'System.String'
@@ -40,7 +40,7 @@ function Test-CType
         [Parameter(Mandatory, Position=0)]
         [String] $Name,
 
-        # By default, searches are case insensitive. Use this switch to make the search case sensitive.
+        # By default, searches are case-insensitive. Use this switch to make the search case-sensitive.
         [switch] $CaseSensitive,
 
         # By default, the function returns `$true` if at least one type exists whose name equals the name passed in. Use
@@ -53,7 +53,6 @@ function Test-CType
     Use-CallerPreference -Cmdlet $PSCmdlet -Session $ExecutionContext.SessionState
 
     $ignoreCase = -not $CaseSensitive
-    $found = $false
 
     $type = [Type]::GetType($Name, $false, $ignoreCase)
     if ($type)

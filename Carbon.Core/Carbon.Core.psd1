@@ -18,7 +18,7 @@
     RootModule = 'Carbon.Core.psm1'
 
     # Version number of this module.
-    ModuleVersion = '1.3.0'
+    ModuleVersion = '1.4.0'
 
     # ID used to uniquely identify this module
     GUID = '20DA9F42-23C4-4917-8597-DCFD7EE4AD00'
@@ -85,6 +85,7 @@
         'Start-CPowerShellProcess',
         'Test-COperatingSystem',
         'Test-CPowerShell',
+        'Test-CType',
         'Test-CTypeDataMember'
     )
 

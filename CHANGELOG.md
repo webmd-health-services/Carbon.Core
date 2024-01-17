@@ -3,6 +3,13 @@
 
 # Carbon.Core Changelog
 
+## 1.4.0
+
+> Released 17 Jan 2024
+
+Added `Test-CType` function for checking if .NET types exist.
+
+
 ## 1.3.0
 
 > Released 25 Aug 2023
